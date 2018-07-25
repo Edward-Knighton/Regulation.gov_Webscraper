@@ -2,10 +2,54 @@ import http.client
 import json
 import urllib.request
 from tqdm import tqdm
-import glob,os
-#stuff for pdf to txt file
-from pdfHelp import myPdfConvert as pdf
 
+#stuff for pdf to txt file
+import sys
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfpage import PDFPage
+from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
+from pdfminer.layout import LAParams
+import io
+
+
+
+#converts pdf, returns its text content as a string
+def pdfparser(data):
+
+    fp = open(data, 'rb')
+    rsrcmgr = PDFResourceManager()
+    retstr = io.StringIO()
+    codec = 'utf-8'
+    laparams = LAParams()
+    device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+    # Create a PDF interpreter object.
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+    # Process each page contained in the document.
+
+    for page in PDFPage.get_pages(fp):
+        interpreter.process_page(page)
+        data =  retstr.getvalue()
+
+ #   return data
+
+def myConvert(fileName):
+    pdfFileObj = open(filename,'rb')
+    pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+    num_pages = pdfReader.numPages
+    count = 0
+    text = ""
+    #The while loop will read each page
+    while count < num_pages:
+        pageObj = pdfReader.getPage(count)
+        count +=1
+        text += pageObj.extractText()
+    #This if statement exists to check if the above library returned #words. It's done because PyPDF2 cannot read scanned files.
+    if text != "":
+        text = text
+    #If the above returns as False, we run the OCR library textract to #convert scanned/image based PDF files into text
+    else:
+        text = textract.process(fileurl, method='tesseract', language='eng')
+    return text
 
 
 def getAll(doc_ID,api_key,page):
@@ -39,27 +83,30 @@ def getOne(doc_ID, api_key):
 
     return parsed_json
 
-def downloadAttachment(dict, fh):
-    print(file=fh)
-    if dict['attachments'][0]['postingRestriction'] == 'No_restrictions':
-        url = dict['attachments'][0]['fileFormats'][0]
-        print("Attachment Title: ", dict['attachments'][0]['title'], file=fh)
-        print(file=fh)
-        apiKEY = "&api_key=RcXuvUWp7vXEOnU3JpOh1pwEWGXd4sCmccwQC9gm"
-        url = url + apiKEY
-        fileLocation = dict['attachments'][0]['title'] + '.pdf'
-        urllib.request.urlretrieve(url, fileLocation)
-        return fileLocation
-    else:
-        print('Attachment Reason Restricted: ', dict['attachments'][0]['reasonRestricted'], file=fh)
-        return 'Restricted'
+def downloadAttachment(dict, fh, folderName):
+    count = 0
+    for attachment in dict['attachments']:
+        print()
+        if dict['attachments'][count]['postingRestriction'] == 'No_restrictions':
+            url = dict['attachments'][count]['fileFormats'][0]
+            print("Attachment Title ",count+1,": ", dict['attachments'][count]['title'], file=fh)
+            apiKEY = "&api_key=RcXuvUWp7vXEOnU3JpOh1pwEWGXd4sCmccwQC9gm"
+            url = url + apiKEY
+            fileLocation = dict['attachments'][0]['title'] + '.pdf'
+            urllib.request.urlretrieve(url, fileLocation)
+            fileText = myConvert(fileLocation)
+            print(fileText, file=fh)
+        else:
+            print('Attachment Reason Restricted: ', dict['attachments'][count]['reasonRestricted'], file=fh)
+        count = count + 1
+    return
 
 def printLabels(dict,label, fh):
     str = label + ': ' + dict[label]
     print(str, file=fh)
     return
 
-def individual(submit,CONST_API_KEY, count, fh):
+def individual(submit,CONST_API_KEY, count, fh, folderName):
     print("Submit number: ", count, file=fh)
     if 'submitterName' not in submit:
         return
@@ -70,18 +117,8 @@ def individual(submit,CONST_API_KEY, count, fh):
     printLabels(submit,'commentText', fh)
     if submit['attachmentCount'] != 0:
         singular = getOne(submit['documentId'],CONST_API_KEY)
-        fileName = downloadAttachment(singular, fh)
-        #print('fileName: ', fileName)
-        for file in glob.glob(fileName):
-            with open(file) as fp:
-                if fileName != 'Restricted':
-                    fileText = pdf.download(fileName)
-                    if fileText == fileName:
-                        print('PDF Could not be opened Properly', file=fh)
-                    else:
-                        print(fileText, file=fh)
-                    if os.path.isfile(fileName):
-                        os.remove(fileName)
+        downloadAttachment(singular, fh, folderName)
+
     print(file=fh)
     print(file=fh)
     return
@@ -106,6 +143,8 @@ def main():
     pageOffset = int(pageOffsetstr)
 
     max = input("How many submits would you like to download?  :  ")
+    print("What is the name of the folder that you would like the attachments saved to?")
+    folderName = input("(Folder must be in the same as the python script)  :  ")
 
     max = int(max)
     max = max + pageOffset
@@ -115,11 +154,11 @@ def main():
     fh = open(fileName,"w")
     count = pageOffset
     pbar = tqdm(total=max-pageOffset)
-    dict = getAll(doc_ID, CONST_API_KEY, pageOffsetstr)
+
     docs = dict['documents']
     for submit in docs:
         if count < max:
-            individual(submit, CONST_API_KEY, count, fh)
+            individual(submit, CONST_API_KEY, count, fh, folderName)
             pbar.update(1)
             count = count + 1
         else:
@@ -128,7 +167,6 @@ def main():
     #pageOffsetstr = str(pageOffset)
     dict = getAll(doc_ID, CONST_API_KEY, pageOffsetstr)
     pbar.close()
-    print()
     print("Submits can be found in: ", fileName)
     print("Exiting now")
     fh.close()
