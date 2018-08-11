@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{585c9a61-b78b-4587-b100-547394bebffb}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>downloadMult.py</StartupFile>
+    <StartupFile>testingJson.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -22,7 +22,7 @@
     <Content Include="progress.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="downloadMult.py" />
+    <Compile Include="testingJson.py" />
     <Compile Include="useAPI.py" />
   </ItemGroup>
   <ItemGroup>

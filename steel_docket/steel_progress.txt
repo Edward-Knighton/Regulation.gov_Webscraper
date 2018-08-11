@@ -1,0 +1,20 @@
+in dict['attachments'] which is a list
+
+for i in dict['attachments']
+	url = dict['attachments'][i]['fileFormats']['0']
+	#in the string there is 'contentType=pdf'
+	#or 'contentType=excel12book'
+
+TAKES FOREVER WHEN SUBMITTED PDFS HAVE GRAPHS IN THEM AND CONVERT THEM TO TEXT
+
+NEXT STEPS:
+FIGURE OUT HOW TO DOWNLOAD THEM ALL TO ONE FOLDER
+WRITE SCRIPT TO GO THROUGH ALL FILES IN THAT FOLDER AND ADD THEM TO A CSV
+	PROBLEM IS ALIGNING COMPANY PDFS, EXCLUSION REQUESTS, AND OBJECTIONS
+
+1. Group CSV files by which type they are in a folder
+	1.a. write a different script (same basic thing) for each different CSV files
+	1.b. will have to figure out what to do about pdf's unsure best route as of now
+
+2. Figure out how to open every single file in a folder
+	2.b.
