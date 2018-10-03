@@ -1,0 +1,15 @@
+China Data --------------------------------------------------------------------
+
+Download all copies of china doc and add to sheet
+  May Require that I get more dropbox space
+    If necessary let iain know and he will get more space
+  Look into sooner rather than later
+  May also need more space on device
+
+Steel Data --------------------------------------------------------------------
+
+  Take out the delete so that it stores all the actual files and stuff
+  Get stuff downloaded for objections
+    Think there may be an issue in that it isnt a 2010 xlsx file
+  Write script to translate Decision pdfs to csv file
+  Attempt to match all files with each other
