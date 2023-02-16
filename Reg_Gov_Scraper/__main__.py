@@ -3,7 +3,6 @@ import json
 import urllib.request
 from tqdm import tqdm
 import glob,os
-#stuff for pdf to txt file
 from pdfHelp import myPdfConvert as pdf
 import csv
 import time
@@ -11,7 +10,7 @@ import time
 def getAll(doc_ID,api_key,page):
     conn = http.client.HTTPConnection("api.data.gov")
 
-    url = 'https://api.data.gov:443/regulations/v3/documents.json?api_key=apiKey&countsOnly=0&encoded=1&dktid=docID&po=PAGE&rpp=1000'
+    url = 'https://api.data.gov:443/regulations/v4/documents.json?api_key=apiKey&countsOnly=0&encoded=1&dktid=docID&po=PAGE&rpp=1000'
     url = url.replace("apiKey", api_key)
     url = url.replace("docID", doc_ID)
     url = url.replace("PAGE",page)
@@ -19,6 +18,7 @@ def getAll(doc_ID,api_key,page):
 
     res = conn.getresponse()
     data = res.read()
+    print(data)
     parsed_json = json.loads(data.decode("utf-8"))
 
     return parsed_json
@@ -61,7 +61,6 @@ def downloadAttachment(dict, fh, attachNumber):
     return 'Restricted'
 
 def downloadAttachmentCSV(dict):
-    #print(file=fh)
     if dict['attachments'][0]['postingRestriction'] == 'No_restrictions':
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-agent', 'Mozilla/5.0)')]
@@ -165,8 +164,8 @@ def downloadAttachmentDL(dict, attachNumber):
     return
 
 
-#only prints 1 page of results currently
-#need to set it up so that it does all of them
+# Only prints 1 page of results currently
+# Next steps to make it print all pages 
 def main():
     print("This is a tool to download comments from the regulations.gov website")
     doc_ID = input("What is the Docket ID of the regulation you are trying to download comments from?  :  ")
@@ -210,8 +209,7 @@ def main():
             pbar.update(1)
             count = count + 1
             csvCount = csvCount + 1
-    #pageOffset = currentPage * 1000
-    #pageOffsetstr = str(pageOffset)
+
     dict = getAll(doc_ID, CONST_API_KEY, pageOffsetstr)
     pbar.close()
     if output == 'csv':
